@@ -1,3 +1,6 @@
+app.get('/', (req, res) => {
+    res.send('SnakeGame API is running');
+});
 const express = require('express');
 const fs = require('fs');
 const cors = require('cors');
