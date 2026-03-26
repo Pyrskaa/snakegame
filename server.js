@@ -2,6 +2,7 @@ const express = require('express')
 const bcrypt = require('bcrypt')
 const fs = require('fs')
 const app = express()
+const port = process.env.PORT
 app.use(express.json())
 const USERS_FILE = 'users.json'
 const SCORES_FILE = 'scores.json'
