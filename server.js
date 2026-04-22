@@ -21,8 +21,8 @@ app.get('/', (req, res) => {
     res.send("Snake Game Server Running")
 })
 
-app.post('/register', (req, res) => {
-    const { username, password } = req.body
+app.get('/register', (req, res) => {
+    const { username, password } = req.query
 
     let users = load('users.json')
 
@@ -36,12 +36,14 @@ app.post('/register', (req, res) => {
     res.json({ success: true })
 })
 
-app.post('/login', (req, res) => {
-    const { username, password } = req.body
+app.get('/login', (req, res) => {
+    const { username, password } = req.query
 
     let users = load('users.json')
 
-    const user = users.find(u => u.username === username && u.password === password)
+    const user = users.find(u => 
+        u.username === username && u.password === password
+    )
 
     res.json({ success: !!user })
 })
