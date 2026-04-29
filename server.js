@@ -5,6 +5,8 @@ const fs = require('fs')
 const app = express()
 const PORT = process.env.PORT || 3000
 
+app.set('trust proxy', true)
+
 app.use(cors())
 app.use(express.json())
 
@@ -25,11 +27,11 @@ app.get('/register', (req, res) => {
     const username = req.query.username
     const password = req.query.password
 
-    let users = load('users.json')
-
     if (!username || !password) {
         return res.json({ success: false })
     }
+
+    let users = load('users.json')
 
     if (users.find(u => u.username === username)) {
         return res.json({ success: false })
@@ -72,7 +74,7 @@ app.get('/score', (req, res) => {
 
 app.get('/stats', (req, res) => {
     const username = req.query.username
-    let score = Number(req.query.score)
+    const score = Number(req.query.score)
 
     if (!username || isNaN(score)) {
         return res.json({ success: false })
