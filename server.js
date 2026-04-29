@@ -22,9 +22,14 @@ app.get('/', (req, res) => {
 })
 
 app.get('/register', (req, res) => {
-    const { username, password } = req.query
+    const username = req.query.username
+    const password = req.query.password
 
     let users = load('users.json')
+
+    if (!username || !password) {
+        return res.json({ success: false })
+    }
 
     if (users.find(u => u.username === username)) {
         return res.json({ success: false })
@@ -37,19 +42,25 @@ app.get('/register', (req, res) => {
 })
 
 app.get('/login', (req, res) => {
-    const { username, password } = req.query
+    const username = req.query.username
+    const password = req.query.password
 
     let users = load('users.json')
 
-    const user = users.find(u => 
+    const user = users.find(u =>
         u.username === username && u.password === password
     )
 
     res.json({ success: !!user })
 })
 
-app.post('/score', (req, res) => {
-    const { username, score } = req.body
+app.get('/score', (req, res) => {
+    const username = req.query.username
+    const score = Number(req.query.score)
+
+    if (!username || isNaN(score)) {
+        return res.json({ success: false })
+    }
 
     let scores = load('scores.json')
 
@@ -59,8 +70,13 @@ app.post('/score', (req, res) => {
     res.json({ success: true })
 })
 
-app.post('/stats', (req, res) => {
-    const { username, score } = req.body
+app.get('/stats', (req, res) => {
+    const username = req.query.username
+    let score = Number(req.query.score)
+
+    if (!username || isNaN(score)) {
+        return res.json({ success: false })
+    }
 
     let stats = load('stats.json')
 
@@ -84,7 +100,17 @@ app.post('/stats', (req, res) => {
     res.json({ success: true })
 })
 
-app.get('/leaderboard', (req, res) => {
+app.get('/stats/:username', (req, res) => {
+    const username = req.params.username
+
+    let stats = load('stats.json')
+
+    let user = stats.find(s => s.username === username)
+
+    res.json(user || {})
+})
+
+app.get('/scores', (req, res) => {
     let scores = load('scores.json')
 
     scores.sort((a, b) => b.score - a.score)
