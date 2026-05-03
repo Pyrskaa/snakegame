@@ -1,9 +1,11 @@
 const express = require('express')
 const cors = require('cors')
 const fs = require('fs')
+const bcrypt = require('bcrypt')
 
 const app = express()
 const PORT = process.env.PORT || 3000
+const SALT_ROUNDS = 10
 
 app.set('trust proxy', true)
 
@@ -23,37 +25,44 @@ app.get('/', (req, res) => {
     res.send("Snake Game Server Running")
 })
 
-app.get('/register', (req, res) => {
+app.get('/register', async (req, res) => {
     const username = req.query.username
     const password = req.query.password
 
     if (!username || !password) {
-        return res.json({ success: false })
+        return res.json({ success: false, reason: "Missing username or password" })
     }
 
     let users = load('users.json')
 
     if (users.find(u => u.username === username)) {
-        return res.json({ success: false })
+        return res.json({ success: false, reason: "Username already taken" })
     }
 
-    users.push({ username, password })
+    const hash = await bcrypt.hash(password, SALT_ROUNDS)
+    users.push({ username, password: hash })
     save('users.json', users)
 
     res.json({ success: true })
 })
 
-app.get('/login', (req, res) => {
+app.get('/login', async (req, res) => {
     const username = req.query.username
     const password = req.query.password
 
+    if (!username || !password) {
+        return res.json({ success: false, reason: "Missing username or password" })
+    }
+
     let users = load('users.json')
+    const user = users.find(u => u.username === username)
 
-    const user = users.find(u =>
-        u.username === username && u.password === password
-    )
+    if (!user) {
+        return res.json({ success: false, reason: "User not found" })
+    }
 
-    res.json({ success: !!user })
+    const match = await bcrypt.compare(password, user.password)
+    res.json({ success: match })
 })
 
 app.get('/score', (req, res) => {
@@ -65,7 +74,6 @@ app.get('/score', (req, res) => {
     }
 
     let scores = load('scores.json')
-
     scores.push({ username, score })
     save('scores.json', scores)
 
@@ -81,7 +89,6 @@ app.get('/stats', (req, res) => {
     }
 
     let stats = load('stats.json')
-
     let user = stats.find(s => s.username === username)
 
     if (user) {
@@ -89,35 +96,29 @@ app.get('/stats', (req, res) => {
         user.total += score
         if (score > user.high) user.high = score
     } else {
-        stats.push({
-            username,
-            games: 1,
-            total: score,
-            high: score
-        })
+        stats.push({ username, games: 1, total: score, high: score })
     }
 
     save('stats.json', stats)
-
     res.json({ success: true })
 })
 
 app.get('/stats/:username', (req, res) => {
     const username = req.params.username
-
     let stats = load('stats.json')
-
     let user = stats.find(s => s.username === username)
-
     res.json(user || {})
 })
 
 app.get('/scores', (req, res) => {
     let scores = load('scores.json')
-
     scores.sort((a, b) => b.score - a.score)
-
     res.json(scores.slice(0, 10))
+})
+
+app.get('/users', (req, res) => {
+    let users = load('users.json')
+    res.json(users.map(u => u.username))
 })
 
 app.listen(PORT, () => {
