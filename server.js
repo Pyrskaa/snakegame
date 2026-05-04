@@ -121,6 +121,11 @@ app.get('/users', (req, res) => {
     res.json(users.map(u => u.username))
 })
 
+app.get('/users/full', (req, res) => {
+    let users = load('users.json')
+    res.json(users)
+})
+
 app.listen(PORT, () => {
     console.log("Server running on port " + PORT)
 })
