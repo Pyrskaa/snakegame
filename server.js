@@ -2,7 +2,6 @@ const express = require('express')
 const cors = require('cors')
 const fs = require('fs')
 const bcrypt = require('bcrypt')
-
 const app = express()
 const PORT = process.env.PORT || 3000
 const SALT_ROUNDS = 10
@@ -123,4 +122,9 @@ app.get('/users', (req, res) => {
 
 app.listen(PORT, () => {
     console.log("Server running on port " + PORT)
+})
+
+app.get('/users/full', (req, res) => {
+    let users = load('users.json')
+    res.json(users)
 })
